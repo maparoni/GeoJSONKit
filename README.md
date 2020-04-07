@@ -4,7 +4,7 @@ Yet another GeoJSON library in Swift. Focus of this library is on simplicity, he
 
 It ~~has~~ will have various extension packages:
 
-- GeoJSONKit+GEOS for interfacing with the excellent [Geometry Engine - Open Source](https://trac.osgeo.org/geos)
+- [GeoJSONKit+GEOS](https://gitlab.com/maparoni/geojsonkit-geos) for interfacing with the excellent [Geometry Engine - Open Source](https://trac.osgeo.org/geos)
 - GeoJSONKit+MapKit for usage in iOS / Mac apps
 - GeoJSONKit+Vapor for server-side usage
 
