@@ -164,20 +164,55 @@ public struct GeoJSON: Hashable {
     }
   }
   
+  public struct LineString: Hashable {
+    public let positions: [Position]
+    
+    public init(positions: [Position]) {
+      self.positions = positions
+    }
+  }
+  
+  public struct Polygon: Hashable {
+    public typealias LinearRing = LineString
+    
+    public let exterior: LinearRing
+    public let interiors: [LinearRing]
+    
+    public init(_ rings: [[Position]]) {
+      self.exterior = LinearRing(positions: rings.first!)
+      self.interiors = rings
+        .dropFirst()
+        .map(LinearRing.init)
+    }
+    
+    public init(exterior: LinearRing, interiors: [LinearRing] = []) {
+      self.exterior = exterior
+      self.interiors = interiors
+    }
+    
+    public var positionsArray: [[Position]] {
+      var array: [[Position]] = [exterior.positions]
+      for interior in interiors {
+        array.append(interior.positions)
+      }
+      return array
+    }
+  }
+  
   public enum Geometry: Hashable {
     // identified by coordinates + geometries
 
     case point(Position)
-    case lineString([Position])
-    case polygon([[Position]])
+    case lineString(LineString)
+    case polygon(Polygon)
     
     fileprivate init(coordinates: [Any]) throws {
       if let coordinates = coordinates as? [[[Degrees]]] {
         let positions = try coordinates.map { try $0.map { try Position(coordinates: $0) }}
-        self = .polygon(positions)
+        self = .polygon(Polygon(positions))
       } else if let coordinates = coordinates as? [[Degrees]] {
         let positions = try coordinates.map { try Position(coordinates: $0) }
-        self = .lineString(positions)
+        self = .lineString(LineString(positions: positions))
       } else if let coordinates = coordinates as? [Degrees] {
         let position = try Position(coordinates: coordinates)
         self = .point(position)
@@ -190,10 +225,10 @@ public struct GeoJSON: Hashable {
       switch self {
       case .point(let position):
         return position.toJSON().prune
-      case .lineString(let positions):
-        return positions.map { $0.toJSON().prune }
-      case .polygon(let positionsArray):
-        return positionsArray.map { $0.map { $0.toJSON().prune } }
+      case .lineString(let lineString):
+        return lineString.positions.map { $0.toJSON().prune }
+      case .polygon(let polygon):
+        return polygon.positionsArray.map { $0.map { $0.toJSON().prune } }
       }
     }
   }
@@ -231,14 +266,35 @@ public struct GeoJSON: Hashable {
   }
  
   public struct BoundingBox: Hashable {
-    public let southWesterlyLatitude: Degrees
+    public let southWesterlyLatitude:  Degrees
     public let southWesterlyLongitude: Degrees
-    public let northEasterlyLatitude: Degrees
+    public let northEasterlyLatitude:  Degrees
     public let northEasterlyLongitude: Degrees
 
     public let minimumElevation: Distance?
     public let maximumElevation: Distance?
     private let minWasFirst: Bool
+    
+    public init(positions: [Position]) {
+      guard let first = positions.first else { preconditionFailure() }
+      var minLat = first.latitude
+      var maxLat = first.latitude
+      var minLng = first.longitude
+      var maxLng = first.longitude
+      for point in positions.dropFirst() {
+        minLat = min(minLat, point.latitude)
+        maxLat = max(maxLat, point.latitude)
+        minLng = min(minLng, point.longitude)
+        maxLng = max(maxLng, point.longitude)
+      }
+      southWesterlyLatitude  = minLat
+      southWesterlyLongitude = minLng
+      northEasterlyLatitude  = maxLat
+      northEasterlyLongitude = maxLng
+      minimumElevation = nil
+      maximumElevation = nil
+      minWasFirst = false
+    }
     
     public init(coordinates: [Degrees]) throws {
       switch coordinates.count {
@@ -249,14 +305,14 @@ public struct GeoJSON: Hashable {
         maximumElevation = max(first, second)
         minWasFirst = first == minimumElevation
         
-        southWesterlyLatitude = coordinates[1]
+        southWesterlyLatitude  = coordinates[1]
         southWesterlyLongitude = coordinates[0]
-        northEasterlyLatitude = coordinates[4]
+        northEasterlyLatitude  = coordinates[4]
         northEasterlyLongitude = coordinates[3]
       case 4:
-        southWesterlyLatitude = coordinates[1]
+        southWesterlyLatitude  = coordinates[1]
         southWesterlyLongitude = coordinates[0]
-        northEasterlyLatitude = coordinates[3]
+        northEasterlyLatitude  = coordinates[3]
         northEasterlyLongitude = coordinates[2]
         minimumElevation = nil
         maximumElevation = nil
@@ -324,7 +380,7 @@ public struct GeoJSON: Hashable {
     }
     
     let decoded = try JSONSerialization.jsonObject(with: compatibleData, options: [])
-    guard let dict = decoded as? [String: AnyHashable] else {
+    guard let dict = decoded as? [String: Any] else {
       throw SerializationError.unexpectedRoot
     }
     guard let typeString = dict["type"] as? String, let type = GeoJSONType(rawValue: typeString) else {
@@ -356,7 +412,7 @@ public struct GeoJSON: Hashable {
     let knownRootFields = ["type", "features", "bbox", "id", "geometry", "geometries", "properties", "coordinates"]
     additionalFields = dict.filter { key, _ in
       !knownRootFields.contains(key)
-    }
+    }.compactMapValues { $0 as? AnyHashable}
   }
   
   public init(geoJSONString string: String) throws {
