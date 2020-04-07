@@ -136,9 +136,9 @@ public struct GeoJSON: Hashable {
   }
   
   public struct Position: Hashable {
-    public let latitude: Degrees
-    public let longitude: Degrees
-    public let altitude: Distance?
+    public var latitude: Degrees
+    public var longitude: Degrees
+    public var altitude: Distance?
     
     public init(latitude: Degrees, longitude: Degrees, altitude: Distance? = nil) {
       self.latitude = latitude
