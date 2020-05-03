@@ -59,9 +59,10 @@ final class GeoJSONParserTest: XCTestCase {
     guard
       case let .geometry(object) = parsed.object,
       case let .single(geometry) = object,
-      case let .lineString(positions) = geometry
+      case let .lineString(lineString) = geometry
       else { return XCTFail("Unexpected structure") }
     
+    let positions = lineString.positions
     XCTAssertEqual(2, positions.count)
     
     XCTAssertEqual(0.0, positions[0].latitude)
@@ -82,10 +83,13 @@ final class GeoJSONParserTest: XCTestCase {
     guard
       case let .geometry(object) = parsed.object,
       case let .multi(geometries) = object,
-      case let .lineString(positions1) = geometries[0],
-      case let .lineString(positions2) = geometries[1]
+      case let .lineString(lineString1) = geometries[0],
+      case let .lineString(lineString2) = geometries[1]
       else { return XCTFail("Unexpected structure") }
     
+    let positions1 = lineString1.positions
+    let positions2 = lineString2.positions
+
     XCTAssertEqual(2, geometries.count)
     XCTAssertEqual(2, positions1.count)
     XCTAssertEqual(2, positions2.count)
@@ -115,11 +119,12 @@ final class GeoJSONParserTest: XCTestCase {
     guard
       case let .geometry(object) = parsed.object,
       case let .single(geometry) = object,
-      case let .polygon(positionsArray) = geometry,
-      let positions = positionsArray.first
+      case let .polygon(polygon) = geometry
       else { return XCTFail("Unexpected structure") }
-    
-    XCTAssertEqual(1, positionsArray.count)
+
+    let external = polygon.exterior
+    let positions = external.positions
+    XCTAssertEqual(1, polygon.positionsArray.count)
     XCTAssertEqual(5, positions.count)
     
     XCTAssertEqual(0.0, positions[0].latitude)
@@ -139,12 +144,13 @@ final class GeoJSONParserTest: XCTestCase {
     guard
       case let .geometry(object) = parsed.object,
       case let .single(geometry) = object,
-      case let .polygon(positionsArray) = geometry,
-      let positions1 = positionsArray.first,
-      let positions2 = positionsArray.last
+      case let .polygon(polygon) = geometry,
+      let hole = polygon.interiors.first
       else { return XCTFail("Unexpected structure") }
     
-    XCTAssertEqual(2, positionsArray.count)
+    let positions1 = polygon.exterior.positions
+    let positions2 = hole.positions
+    XCTAssertEqual(2, polygon.positionsArray.count)
     XCTAssertEqual(5, positions1.count)
     XCTAssertEqual(5, positions2.count)
 
