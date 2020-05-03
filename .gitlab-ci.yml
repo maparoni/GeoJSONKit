@@ -1,0 +1,21 @@
+stages:
+  - build
+  - test
+  - archive
+  - deploy
+
+build_project:
+  stage: build
+  script:
+    - swift build
+  tags:
+    - ios
+    - osx
+
+test_project:
+  stage: test
+  script:
+    - swift test
+  tags:
+    - ios
+    - osx
