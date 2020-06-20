@@ -259,7 +259,7 @@ public struct GeoJSON: Hashable {
       var json: [String: Any] = [
         "geometry": geometry.toJSON()
       ]
-      json["properties"] = properties
+      json["properties"] = properties?.prune
       json["id"] = id
       return json
     }
@@ -444,7 +444,7 @@ public struct GeoJSON: Hashable {
     }
     json.merge(objectJson) { a, _ in a }
 
-    json.merge(additionalFields) { a, _ in a }
+    json.merge(additionalFields.prune) { a, _ in a }
     
     return json
   }
@@ -457,6 +457,32 @@ fileprivate extension Array where Element == GeoJSON.Degrees {
   var prune: [Any] {
     return map {
       (Decimal($0) as NSDecimalNumber).rounding(accordingToBehavior: Array.roundingBehaviour) as Decimal
+    }
+  }
+}
+
+fileprivate extension Dictionary {
+  var prune: [String: Any] {
+    if let compatible = pruneWorker as? [String: Any] {
+      return compatible
+    } else {
+      preconditionFailure()
+    }
+  }
+  
+  private var pruneWorker: [Key: Any] {
+    return mapValues { value in
+      if let dict = value as? [String: Any] {
+        return dict.prune
+      } else if let doubles = value as? [Double] {
+        return doubles.prune
+      } else if let doubless = value as? [[Double]] {
+        return doubless.map { $0.prune }
+      } else if let double = value as? Double {
+        return Decimal(double)
+      } else {
+        return value
+      }
     }
   }
 }
