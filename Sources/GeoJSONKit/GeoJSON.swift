@@ -474,6 +474,8 @@ fileprivate extension Dictionary {
     return mapValues { value in
       if let dict = value as? [String: Any] {
         return dict.prune
+      } else if value is Int || value is [Int] || value is [[Int]] || value is Bool || value is [Bool] || value is [[Bool]] {
+        return value
       } else if let doubles = value as? [Double] {
         return doubles.prune
       } else if let doubless = value as? [[Double]] {
