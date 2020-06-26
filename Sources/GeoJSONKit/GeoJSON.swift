@@ -257,6 +257,7 @@ public struct GeoJSON: Hashable {
     
     public func toJSON() -> [String: Any] {
       var json: [String: Any] = [
+        "type": "Feature",
         "geometry": geometry.toJSON()
       ]
       json["properties"] = properties?.prune
