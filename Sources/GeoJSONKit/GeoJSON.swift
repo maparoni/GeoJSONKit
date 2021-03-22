@@ -48,7 +48,7 @@ public struct GeoJSON: Hashable {
     /// Multiple regions of different types
     case collection([GeometryObject])
     
-    fileprivate init(dict: [String: Any]) throws {
+    public init(dict: [String: Any]) throws {
       guard let typeString = dict["type"] as? String, let type = GeoJSONType(rawValue: typeString) else {
         throw SerializationError.missingOrInvalidRequiredField("type")
       }
