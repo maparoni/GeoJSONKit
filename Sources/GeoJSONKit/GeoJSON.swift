@@ -165,7 +165,7 @@ public struct GeoJSON: Hashable {
   }
   
   public struct LineString: Hashable {
-    public let positions: [Position]
+    public var positions: [Position]
     
     // We precompute this as it's static, but slow to re-compute
     private let precomputedHash: Int
@@ -186,8 +186,8 @@ public struct GeoJSON: Hashable {
   public struct Polygon: Hashable {
     public typealias LinearRing = LineString
     
-    public let exterior: LinearRing
-    public let interiors: [LinearRing]
+    public var exterior: LinearRing
+    public var interiors: [LinearRing]
     
     // We precompute this as it's static, but slow to re-compute
     private let precomputedHash: Int
@@ -220,11 +220,17 @@ public struct GeoJSON: Hashable {
     }
     
     public var positionsArray: [[Position]] {
-      var array: [[Position]] = [exterior.positions]
-      for interior in interiors {
-        array.append(interior.positions)
+      get {
+        var array: [[Position]] = [exterior.positions]
+        for interior in interiors {
+          array.append(interior.positions)
+        }
+        return array
       }
-      return array
+      set {
+        exterior = LinearRing(positions: newValue[0])
+        interiors = newValue.suffix(from: 1).map { LinearRing(positions: $0) }
+      }
     }
   }
   
