@@ -83,7 +83,7 @@ public struct GeoJSON: Hashable {
       }
     }
     
-    fileprivate var type: GeoJSONType {
+    var type: GeoJSONType {
       switch self {
       case .single(let geometry):
         switch geometry {
@@ -256,7 +256,7 @@ public struct GeoJSON: Hashable {
       }
     }
     
-    fileprivate func coordinatesJSON() -> [Any] {
+    func coordinatesJSON() -> [Any] {
       switch self {
       case .point(let position):
         return position.toJSON().prune
