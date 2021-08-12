@@ -213,6 +213,14 @@ final class GeoJSONParserTest: XCTestCase {
     XCTAssertNotNil(parsed)
   }
   
+  func testFeatureCollectionFromDict() throws {
+    let data = try XCTestCase.loadData(filename: "featurecollection")
+    let object = try JSONSerialization.jsonObject(with: data, options: [])
+    let dict = try XCTUnwrap(object as? [String: Any])
+    let parsed = try GeoJSON(from: dict)
+    XCTAssertNotNil(parsed)
+  }
+  
   static var allTests = [
     ("testPoint", testPoint),
     ("testMultiPoint", testMultiPoint),
@@ -223,6 +231,7 @@ final class GeoJSONParserTest: XCTestCase {
     ("testMultiPolygon", testMultiPolygon),
     ("testFeatureCollection", testFeatureCollection),
     ("testGeometryCollection", testGeometryCollection),
+    ("testFeatureCollectionFromDict", testFeatureCollectionFromDict),
     ("testTripGo", testTripGo),
     ("testWorld", testWorld),
     ("testNuremberg", testNuremberg),

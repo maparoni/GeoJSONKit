@@ -419,6 +419,12 @@ public struct GeoJSON: Hashable {
     guard let dict = decoded as? [String: Any] else {
       throw SerializationError.unexpectedRoot
     }
+    
+    try self.init(from: dict)
+  }
+    
+  public init(from dict: [String: Any]) throws {
+
     guard let typeString = dict["type"] as? String, let type = GeoJSONType(rawValue: typeString) else {
       throw SerializationError.missingOrInvalidRequiredField("type")
     }
