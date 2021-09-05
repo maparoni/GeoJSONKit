@@ -22,7 +22,7 @@ Alternative packages:
 To install GeoJSONKit using the [Swift Package Manager](https://swift.org/package-manager/), add the following package to the `dependencies` in your Package.swift file:
 
 ```swift
-.package(url: "https://github.com/maparoni/geojsonkit.git", from: "0.3.0"),
+.package(url: "https://github.com/maparoni/geojsonkit.git", from: "0.3.0")
 ```
 
 Then `import GeoJSONKit` in any Swift file in your module.
