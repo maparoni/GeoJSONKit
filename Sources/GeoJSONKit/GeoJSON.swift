@@ -286,7 +286,7 @@ public struct GeoJSON: Hashable {
       }
       
       geometry = try GeometryObject(dict: geometryDict)
-      properties = dict["properties"] as? [String: AnyHashable]
+      properties = (dict["properties"] as? [String: Any])?.compactMapValues(Adjuster.hashable(_:))
       id = dict["id"] as? AnyHashable
     }
     
@@ -454,7 +454,7 @@ public struct GeoJSON: Hashable {
     let knownRootFields = ["type", "features", "bbox", "id", "geometry", "geometries", "properties", "coordinates"]
     additionalFields = dict.filter { key, _ in
       !knownRootFields.contains(key)
-    }.compactMapValues { $0 as? AnyHashable}
+    }.compactMapValues(Adjuster.hashable(_:))
   }
   
   public init(geoJSONString string: String) throws {
@@ -503,30 +503,42 @@ fileprivate extension Array where Element == GeoJSON.Degrees {
   }
 }
 
-fileprivate extension Dictionary {
-  var prune: [String: Any] {
-    if let compatible = pruneWorker as? [String: Any] {
-      return compatible
+fileprivate enum Adjuster {
+  static func prune(_ value: Any) -> Any {
+    if let dict = value as? [String: Any] {
+      return dict.mapValues(prune(_:))
+    } else if value is Int || value is [Int] || value is [[Int]] || value is Bool || value is [Bool] || value is [[Bool]] {
+      return value
+    } else if let doubles = value as? [Double] {
+      return doubles.prune
+    } else if let doubless = value as? [[Double]] {
+      return doubless.map(\.prune)
+    } else if let double = value as? Double {
+      return Decimal(double)
+    } else if let array = value as? [Any] {
+      return array.map(prune(_:))
     } else {
-      preconditionFailure()
+      return value
     }
   }
   
-  private var pruneWorker: [Key: Any] {
-    return mapValues { value in
-      if let dict = value as? [String: Any] {
-        return dict.prune
-      } else if value is Int || value is [Int] || value is [[Int]] || value is Bool || value is [Bool] || value is [[Bool]] {
-        return value
-      } else if let doubles = value as? [Double] {
-        return doubles.prune
-      } else if let doubless = value as? [[Double]] {
-        return doubless.map { $0.prune }
-      } else if let double = value as? Double {
-        return Decimal(double)
-      } else {
-        return value
-      }
+  static func hashable(_ value: Any) -> AnyHashable? {
+    if let dict = value as? [String: Any] {
+      return dict.mapValues(hashable(_:))
+    } else if let array = value as? [Any] {
+      return array.map(hashable(_:))
+    } else if let hashable = value as? AnyHashable {
+      return hashable
+    } else {
+      assertionFailure("Unexpected non-hashable: \(value) -- \(type(of: value))")
+      return nil
     }
+  }
+}
+
+
+fileprivate extension Dictionary {
+  var prune: [Key: Any] {
+    mapValues(Adjuster.prune(_:))
   }
 }

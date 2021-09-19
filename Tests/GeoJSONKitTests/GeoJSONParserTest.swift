@@ -221,21 +221,17 @@ final class GeoJSONParserTest: XCTestCase {
     XCTAssertNotNil(parsed)
   }
   
-  static var allTests = [
-    ("testPoint", testPoint),
-    ("testMultiPoint", testMultiPoint),
-    ("testLineString", testLineString),
-    ("testMultiLineString", testMultiLineString),
-    ("testPolygon", testPolygon),
-    ("testPolygonWithHole", testPolygonWithHole),
-    ("testMultiPolygon", testMultiPolygon),
-    ("testFeatureCollection", testFeatureCollection),
-    ("testGeometryCollection", testGeometryCollection),
-    ("testFeatureCollectionFromDict", testFeatureCollectionFromDict),
-    ("testTripGo", testTripGo),
-    ("testWorld", testWorld),
-    ("testNuremberg", testNuremberg),
-    ("testNSWFires", testNSWFires),
-  ]
+  func testAdditionalFields() throws {
+    let data = try XCTestCase.loadData(filename: "nuremberg")
+    let parsed = try GeoJSON(data: data)
+    XCTAssertNotNil(parsed)
+    let geocoding = try XCTUnwrap(parsed.additionalFields["geocoding"])
+    let geocodingDict = try XCTUnwrap(geocoding as? [String: Any])
+    XCTAssertEqual(geocodingDict["version"] as? String, "0.2")
+    XCTAssertEqual(geocodingDict["attribution"] as? String, "http://pelias.mapzen.com/v1/attribution")
+    XCTAssertNotNil(geocodingDict["query"])
+    XCTAssertNotNil(geocodingDict["engine"])
+    XCTAssertEqual(geocodingDict["timestamp"] as? Int, 1505232719417)
+  }
     
 }
