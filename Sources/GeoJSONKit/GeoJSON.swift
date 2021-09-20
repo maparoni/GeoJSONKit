@@ -465,7 +465,7 @@ public struct GeoJSON: Hashable {
   }
 
   
-  public func toData(options: JSONSerialization.WritingOptions) throws -> Data {
+  public func toData(options: JSONSerialization.WritingOptions = []) throws -> Data {
     return try JSONSerialization.data(withJSONObject: toJSON(), options: options)
   }
   
