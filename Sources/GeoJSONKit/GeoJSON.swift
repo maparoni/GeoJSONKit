@@ -10,7 +10,13 @@ import Foundation
 
 public struct GeoJSON: Hashable {
 
+  /// A latitude or longitude in degrees. Typically uses `WGS84`.
   public typealias Degrees = Double
+
+  /// An azimuth measured in degrees clockwise from true north.
+  public typealias Direction = Double
+
+  /// A distance in meters.
   public typealias Distance = Double
 
   public enum SerializationError: Error {
@@ -535,7 +541,6 @@ fileprivate enum Adjuster {
     }
   }
 }
-
 
 fileprivate extension Dictionary {
   var prune: [Key: Any] {
