@@ -11,7 +11,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Build and Test
+    - name: Build
+      run: swift build
+    - name: Test
       run: swift test
 
   linux:
@@ -20,5 +22,7 @@ jobs:
       image: swift:5.4
     steps:
     - uses: actions/checkout@v2
-    - name: Build and Test
+    - name: Build
+      run: swift build
+    - name: Test
       run: swift test
