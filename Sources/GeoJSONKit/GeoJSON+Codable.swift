@@ -78,6 +78,14 @@ extension GeoJSON.GeometryObject: Codable {
         try container.encode(triple, forKey: .coordinates)
       } else if let quatruple = coordinates as? [[[[Double]]]] {
         try container.encode(quatruple, forKey: .coordinates)
+      } else if let single = coordinates as? [Decimal] {
+        try container.encode(single, forKey: .coordinates)
+      } else if let double = coordinates as? [[Decimal]] {
+        try container.encode(double, forKey: .coordinates)
+      } else if let triple = coordinates as? [[[Decimal]]] {
+        try container.encode(triple, forKey: .coordinates)
+      } else if let quatruple = coordinates as? [[[[Decimal]]]] {
+        try container.encode(quatruple, forKey: .coordinates)
       } else {
         throw CodingError.unsupportedCoordinateCount
       }
