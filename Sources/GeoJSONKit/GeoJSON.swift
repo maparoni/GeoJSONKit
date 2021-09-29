@@ -110,18 +110,18 @@ public struct GeoJSON: Hashable {
       }
     }
     
-    fileprivate func toJSON() -> [String: Any] {
+    fileprivate func toJSON(prune: Bool) -> [String: Any] {
       var json: [String: Any] = [
         "type": type.rawValue
       ]
       
       switch self {
       case .single(let geometry):
-        json["coordinates"] = geometry.coordinatesJSON()
+        json["coordinates"] = geometry.coordinatesJSON(prune: prune)
       case .multi(let geometries):
-        json["coordinates"] = geometries.map { $0.coordinatesJSON() }
+        json["coordinates"] = geometries.map { $0.coordinatesJSON(prune: prune) }
       case .collection(let geometries):
-        json["geometries"] = geometries.map { $0.toJSON() }
+        json["geometries"] = geometries.map { $0.toJSON(prune: prune) }
       }
       
       return json
@@ -262,14 +262,25 @@ public struct GeoJSON: Hashable {
       }
     }
     
-    func coordinatesJSON() -> [Any] {
-      switch self {
-      case .point(let position):
-        return position.toJSON().prune
-      case .lineString(let lineString):
-        return lineString.positions.map { $0.toJSON().prune }
-      case .polygon(let polygon):
-        return polygon.positionsArray.map { $0.map { $0.toJSON().prune } }
+    func coordinatesJSON(prune: Bool) -> [Any] {
+      if prune {
+        switch self {
+        case .point(let position):
+          return position.toJSON().prune
+        case .lineString(let lineString):
+          return lineString.positions.map { $0.toJSON().prune }
+        case .polygon(let polygon):
+          return polygon.positionsArray.map { $0.map { $0.toJSON().prune } }
+        }
+      } else {
+        switch self {
+        case .point(let position):
+          return position.toJSON()
+        case .lineString(let lineString):
+          return lineString.positions.map { $0.toJSON() }
+        case .polygon(let polygon):
+          return polygon.positionsArray.map { $0.map { $0.toJSON() } }
+        }
       }
     }
   }
@@ -296,12 +307,12 @@ public struct GeoJSON: Hashable {
       id = dict["id"] as? AnyHashable
     }
     
-    public func toJSON() -> [String: Any] {
+    public func toJSON(prune: Bool = true) -> [String: Any] {
       var json: [String: Any] = [
         "type": "Feature",
-        "geometry": geometry.toJSON()
+        "geometry": geometry.toJSON(prune: prune)
       ]
-      json["properties"] = properties?.prune
+      json["properties"] = prune ? properties?.prune : properties
       json["id"] = id
       return json
     }
@@ -471,28 +482,31 @@ public struct GeoJSON: Hashable {
   }
 
   
-  public func toData(options: JSONSerialization.WritingOptions = []) throws -> Data {
-    return try JSONSerialization.data(withJSONObject: toJSON(), options: options)
+  public func toData(options: JSONSerialization.WritingOptions = [], prune: Bool = true) throws -> Data {
+    return try JSONSerialization.data(withJSONObject: toJSON(prune: prune), options: options)
   }
   
-  public func toJSON() -> [String: Any] {
+  public func toJSON(prune: Bool = true) -> [String: Any] {
     var json = [String: Any]()
     
     json["type"] = type.rawValue
-    json["bbox"] = boundingBox?.toJSON().prune
+    
+    let bbJson = boundingBox?.toJSON()
+    json["bbox"] = prune ? bbJson?.prune : bbJson
     
     let objectJson: [String: Any]
     switch object {
     case .feature(let feature):
-      objectJson = feature.toJSON()
+      objectJson = feature.toJSON(prune: prune)
     case .featureCollection(let features):
-      objectJson = ["features": features.map { $0.toJSON() }]
+      objectJson = ["features": features.map { $0.toJSON(prune: prune) }]
     case .geometry(let geometry):
-      objectJson = geometry.toJSON()
+      objectJson = geometry.toJSON(prune: prune)
     }
     json.merge(objectJson) { a, _ in a }
 
-    json.merge(additionalFields.prune) { a, _ in a }
+    let additional = prune ? additionalFields.prune : additionalFields
+    json.merge(additional) { a, _ in a }
     
     return json
   }
