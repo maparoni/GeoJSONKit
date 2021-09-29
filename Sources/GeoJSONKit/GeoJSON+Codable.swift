@@ -12,11 +12,11 @@ extension GeoJSON.GeometryObject: Codable {
   enum CodingKeys: String, CodingKey {
     case type
     case coordinates
+    case geometries
   }
   
   public enum CodingError: Error {
     case featuresNotSupported
-    case geometryCollectionNotSupported
     case unsupportedCoordinateCount
   }
   
@@ -27,8 +27,10 @@ extension GeoJSON.GeometryObject: Codable {
     switch type {
     case .feature, .featureCollection:
       throw CodingError.featuresNotSupported
+
     case .geometryCollection:
-      throw CodingError.geometryCollectionNotSupported
+      let geometries = try container.decode([GeoJSON.GeometryObject].self, forKey: .geometries)
+      self = .collection(geometries)
       
     case .point:
       let coordinates = try container.decode([Double].self, forKey: .coordinates)
@@ -92,8 +94,8 @@ extension GeoJSON.GeometryObject: Codable {
     }
     
     switch self {
-    case .collection:
-      throw CodingError.geometryCollectionNotSupported
+    case .collection(let geometries):
+      try container.encode(geometries, forKey: .geometries)
       
     case .single(let geometry):
       try addCoordinates(geometry.coordinatesJSON())

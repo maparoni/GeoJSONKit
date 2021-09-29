@@ -17,8 +17,7 @@ final class GeoJSONCodableTest: XCTestCase {
     XCTAssertNotNil(parsed)
     
     guard
-      case let .single(geometry) = parsed,
-      case let .point(position) = geometry
+      case let .single(.point(position)) = parsed
       else { return XCTFail("Unexpected structure") }
     
     XCTAssertEqual(0.0, position.latitude)
@@ -54,8 +53,7 @@ final class GeoJSONCodableTest: XCTestCase {
     XCTAssertNotNil(parsed)
     
     guard
-      case let .single(geometry) = parsed,
-      case let .lineString(lineString) = geometry
+      case let .single(.lineString(lineString)) = parsed
       else { return XCTFail("Unexpected structure") }
     
     let positions = lineString.positions
@@ -68,7 +66,6 @@ final class GeoJSONCodableTest: XCTestCase {
     XCTAssertEqual(1.0, positions[1].latitude)
     XCTAssertEqual(101.0, positions[1].longitude)
     XCTAssertNil(positions[1].altitude)
-
   }
   
   func testMultiLineString() throws {
@@ -112,8 +109,7 @@ final class GeoJSONCodableTest: XCTestCase {
     XCTAssertNotNil(parsed)
     
     guard
-      case let .single(geometry) = parsed,
-      case let .polygon(polygon) = geometry
+      case let .single(.polygon(polygon)) = parsed
       else { return XCTFail("Unexpected structure") }
 
     let external = polygon.exterior
@@ -136,8 +132,7 @@ final class GeoJSONCodableTest: XCTestCase {
     XCTAssertNotNil(parsed)
     
     guard
-      case let .single(geometry) = parsed,
-      case let .polygon(polygon) = geometry,
+      case let .single(.polygon(polygon)) = parsed,
       let hole = polygon.interiors.first
       else { return XCTFail("Unexpected structure") }
     
@@ -169,27 +164,35 @@ final class GeoJSONCodableTest: XCTestCase {
     let parsed = try JSONDecoder().decode(GeoJSON.GeometryObject.self, from: data)
     XCTAssertNotNil(parsed)
   }
-  
+
+  func testGeometryCollection() throws {
+    let data = try XCTestCase.loadData(filename: "geometrycollection")
+    let parsed = try JSONDecoder().decode(GeoJSON.GeometryObject.self, from: data)
+    XCTAssertNotNil(parsed)
+    
+    guard
+      case let .collection(geometries) = parsed,
+      geometries.count == 2,
+      case let .single(.point(position)) = geometries.first,
+      case let .single(.lineString(lineString)) = geometries.last
+    else { return XCTFail("Unexpected structure") }
+    
+    XCTAssertEqual(0.0, position.latitude)
+    XCTAssertEqual(100.0, position.longitude)
+    XCTAssertNil(position.altitude)
+
+    XCTAssertEqual(0.0, lineString.positions[0].latitude)
+    XCTAssertEqual(101.0, lineString.positions[0].longitude)
+    XCTAssertNil(lineString.positions[0].altitude)
+    
+    XCTAssertEqual(1.0, lineString.positions[1].latitude)
+    XCTAssertEqual(102.0, lineString.positions[1].longitude)
+    XCTAssertNil(lineString.positions[1].altitude)
+  }
+
   func testFeatureCollection() throws {
     let data = try XCTestCase.loadData(filename: "featurecollection")
     XCTAssertThrowsError(try JSONDecoder().decode(GeoJSON.GeometryObject.self, from: data))
   }
-
-  func testGeometryCollection() throws {
-    let data = try XCTestCase.loadData(filename: "geometrycollection")
-    XCTAssertThrowsError(try JSONDecoder().decode(GeoJSON.GeometryObject.self, from: data))
-  }
-  
-  static var allTests = [
-    ("testPoint", testPoint),
-    ("testMultiPoint", testMultiPoint),
-    ("testLineString", testLineString),
-    ("testMultiLineString", testMultiLineString),
-    ("testPolygon", testPolygon),
-    ("testPolygonWithHole", testPolygonWithHole),
-    ("testMultiPolygon", testMultiPolygon),
-    ("testFeatureCollection", testFeatureCollection),
-    ("testGeometryCollection", testGeometryCollection),
-  ]
     
 }
