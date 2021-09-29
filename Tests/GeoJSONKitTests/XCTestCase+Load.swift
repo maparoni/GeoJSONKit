@@ -20,7 +20,6 @@ extension XCTestCase {
         .appendingPathExtension(fileType)
     return resourceURL
   }
-
   
   static func loadData(filename: String, ofType fileType: String = "geojson") throws -> Data {
     return try Data(contentsOf: url(filename: filename, ofType: fileType))
