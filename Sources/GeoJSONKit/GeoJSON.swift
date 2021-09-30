@@ -129,7 +129,7 @@ public struct GeoJSON: Hashable {
       
   }
 
-  public enum GeoJSONType: String, Codable {
+  public enum GeoJSONType: String, Codable, CaseIterable {
     case feature = "Feature"
     case featureCollection = "FeatureCollection"
     case point = "Point"
@@ -386,7 +386,7 @@ public struct GeoJSON: Hashable {
     }
   }
   
-  public let type: GeoJSONType
+  public var type: GeoJSONType
   public var object: GeoJSONObject
   
   /// A GeoJSON object MAY have a member named "bbox" to include
