@@ -328,6 +328,11 @@ public struct GeoJSON: Hashable {
     public let maximumElevation: Distance?
     private let minWasFirst: Bool
     
+    /// Creates a bounding box encapsulating the provided positions
+    ///
+    /// - warning: This does not deal with spanning the antimeridian. So, the Fiji case from the GeoJSON specs would result in a 355 degree bounding box and not a 5 degree one. To deal with this, apply the appropriate logic on a level above and then use the `init(coordinates:)` constructor.
+    ///
+    /// - Parameter positions: Positions to create the bounding box from; has to be at least one!
     public init(positions: [Position]) {
       guard let first = positions.first else { preconditionFailure() }
       var minLat = first.latitude
@@ -349,6 +354,9 @@ public struct GeoJSON: Hashable {
       minWasFirst = false
     }
     
+    
+    /// Create a bounding box from the provided coordinates
+    /// - Parameter coordinates: 4 or 6 elements in order: south-westerly longitude, south-westerly latitude, (elevation 1), north-easterly lontigude, north-easterly latitude, (elevation 2); where the elevations are optional (but either provide both or none) and there's no required order in which is the minimum and which is the maximum elevation.
     public init(coordinates: [Degrees]) throws {
       switch coordinates.count {
       case 6:
@@ -398,25 +406,25 @@ public struct GeoJSON: Hashable {
   public var additionalFields: [String: AnyHashable]
   
   /// Initialises a new FeatureCollection.
-  public init(features: [Feature], additionalFields: [String: AnyHashable] = [:]) {
+  public init(features: [Feature], additionalFields: [String: AnyHashable] = [:], boundingBox: BoundingBox? = nil) {
     type = .featureCollection
     object = .featureCollection(features)
     self.additionalFields = additionalFields
-    boundingBox = nil
+    self.boundingBox = boundingBox
   }
   
-  public init(feature: Feature, additionalFields: [String: AnyHashable] = [:]) {
+  public init(feature: Feature, additionalFields: [String: AnyHashable] = [:], boundingBox: BoundingBox? = nil) {
     type = .feature
     object = .feature(feature)
     self.additionalFields = additionalFields
-    boundingBox = nil
+    self.boundingBox = boundingBox
   }
 
-  public init(geometry: GeometryObject, additionalFields: [String: AnyHashable] = [:]) {
+  public init(geometry: GeometryObject, additionalFields: [String: AnyHashable] = [:], boundingBox: BoundingBox? = nil) {
     type = geometry.type
     object = .geometry(geometry)
     self.additionalFields = additionalFields
-    boundingBox = nil
+    self.boundingBox = boundingBox
   }
   
   public init(data: Data, textEncoding: String? = nil) throws {
