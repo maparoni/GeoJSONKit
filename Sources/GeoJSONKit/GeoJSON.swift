@@ -400,7 +400,7 @@ public struct GeoJSON: Hashable {
   /// A GeoJSON object MAY have a member named "bbox" to include
   /// information on the coordinate range for its Geometries, Features, or
   /// FeatureCollections.
-  public let boundingBox: BoundingBox?
+  public var boundingBox: BoundingBox?
   
   /// Additional fields that we didn't parse
   public var additionalFields: [String: AnyHashable]
