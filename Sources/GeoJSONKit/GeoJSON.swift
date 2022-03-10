@@ -111,7 +111,7 @@ public struct GeoJSON: Hashable {
     }
     
     public func toJSON(prune: Bool) -> [String: AnyHashable] {
-      var json: [String: AnyHashable] = [
+      var json: [String: Any] = [
         "type": type.rawValue
       ]
       
@@ -124,7 +124,7 @@ public struct GeoJSON: Hashable {
         json["geometries"] = geometries.map { $0.toJSON(prune: prune) }
       }
       
-      return json
+      return json.hashable
     }
       
   }
@@ -262,7 +262,7 @@ public struct GeoJSON: Hashable {
       }
     }
     
-    func coordinatesJSON(prune: Bool) -> [AnyHashable] {
+    func coordinatesJSON(prune: Bool) -> [Any] {
       if prune {
         switch self {
         case .point(let position):
@@ -314,7 +314,7 @@ public struct GeoJSON: Hashable {
       ]
       json["properties"] = prune ? properties?.prune : properties
       json["id"] = id
-      return json
+      return json.hashable
     }
   }
  
@@ -516,7 +516,7 @@ public struct GeoJSON: Hashable {
     let additional = prune ? additionalFields.prune : additionalFields
     json.merge(additional) { a, _ in a }
     
-    return json
+    return json.hashable
   }
   
 }
@@ -524,7 +524,7 @@ public struct GeoJSON: Hashable {
 fileprivate extension Array where Element == GeoJSON.Degrees {
   static let roundingBehaviour = NSDecimalNumberHandler(roundingMode: .plain, scale: 6, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: true)
   
-  var prune: [AnyHashable] {
+  var prune: [Any] {
     return map {
       (Decimal($0) as NSDecimalNumber).rounding(accordingToBehavior: Array.roundingBehaviour) as Decimal
     }
@@ -567,5 +567,9 @@ fileprivate enum Adjuster {
 fileprivate extension Dictionary {
   var prune: [Key: Any] {
     mapValues(Adjuster.prune(_:))
+  }
+
+  var hashable: [Key: AnyHashable] {
+    compactMapValues(Adjuster.hashable(_:))
   }
 }
