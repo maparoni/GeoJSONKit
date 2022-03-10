@@ -110,7 +110,7 @@ public struct GeoJSON: Hashable {
       }
     }
     
-    fileprivate func toJSON(prune: Bool) -> [String: Any] {
+    public func toJSON(prune: Bool) -> [String: AnyHashable] {
       var json: [String: Any] = [
         "type": type.rawValue
       ]
@@ -124,7 +124,7 @@ public struct GeoJSON: Hashable {
         json["geometries"] = geometries.map { $0.toJSON(prune: prune) }
       }
       
-      return json
+      return json.hashable
     }
       
   }
@@ -307,14 +307,14 @@ public struct GeoJSON: Hashable {
       id = dict["id"] as? AnyHashable
     }
     
-    public func toJSON(prune: Bool = true) -> [String: Any] {
+    public func toJSON(prune: Bool = true) -> [String: AnyHashable] {
       var json: [String: Any] = [
         "type": "Feature",
         "geometry": geometry.toJSON(prune: prune)
       ]
       json["properties"] = prune ? properties?.prune : properties
       json["id"] = id
-      return json
+      return json.hashable
     }
   }
  
@@ -494,7 +494,7 @@ public struct GeoJSON: Hashable {
     return try JSONSerialization.data(withJSONObject: toJSON(prune: prune), options: options)
   }
   
-  public func toJSON(prune: Bool = true) -> [String: Any] {
+  public func toJSON(prune: Bool = true) -> [String: AnyHashable] {
     var json = [String: Any]()
     
     json["type"] = type.rawValue
@@ -516,7 +516,7 @@ public struct GeoJSON: Hashable {
     let additional = prune ? additionalFields.prune : additionalFields
     json.merge(additional) { a, _ in a }
     
-    return json
+    return json.hashable
   }
   
 }
@@ -567,5 +567,9 @@ fileprivate enum Adjuster {
 fileprivate extension Dictionary {
   var prune: [Key: Any] {
     mapValues(Adjuster.prune(_:))
+  }
+
+  var hashable: [Key: AnyHashable] {
+    compactMapValues(Adjuster.hashable(_:))
   }
 }
