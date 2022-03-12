@@ -24,7 +24,7 @@ public struct GeoJSON: Hashable {
     case unexpectedRoot
     case missingOrInvalidRequiredField(String)
     case wrongNumberOfCoordinates(String)
-    case wrongTypeOfSimpleGeometry
+    case wrongTypeOfSimpleGeometry(String)
   }
   
   /// A GeoJSON object may represent a region of space (a Geometry), a
@@ -84,8 +84,10 @@ public struct GeoJSON: Hashable {
         }
         self = .collection(geometries)
         
-      default:
-        throw SerializationError.wrongTypeOfSimpleGeometry
+      case .feature:
+        throw SerializationError.wrongTypeOfSimpleGeometry("Can't turn Feature into GeometryObject")
+      case .featureCollection:
+        throw SerializationError.wrongTypeOfSimpleGeometry("Can't turn FeatureCollection into GeometryObject")
       }
     }
     
@@ -258,7 +260,7 @@ public struct GeoJSON: Hashable {
         let position = try Position(coordinates: coordinates)
         self = .point(position)
       } else {
-        throw SerializationError.wrongTypeOfSimpleGeometry
+        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \([[[Degrees]]].self), \([[Degrees]].self), or \([Degrees].self), but got \(Swift.type(of: coordinates)).")
       }
     }
     
