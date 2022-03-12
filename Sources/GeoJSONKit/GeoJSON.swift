@@ -154,13 +154,19 @@ public struct GeoJSON: Hashable {
       self.altitude = altitude
     }
     
-    fileprivate init(coordinates: [Degrees]) throws {
+    fileprivate init(coordinates: [Any]) throws {
       guard coordinates.count >= 2 else {
         throw SerializationError.wrongNumberOfCoordinates("At least 2 per position")
       }
-      latitude = coordinates[1]
-      longitude = coordinates[0]
-      altitude = coordinates.count >= 3 ? coordinates[2] : nil
+      guard
+        let lat = coordinates[0] as? Degrees,
+        let lng = coordinates[1] as? Degrees
+      else {
+        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \(Degrees.self) for coordinates but got \(Swift.type(of: coordinates[0])) and \(Swift.type(of: coordinates[1]))")
+      }
+      latitude = lat
+      longitude = lng
+      altitude = coordinates.count >= 3 ? coordinates[2] as? Degrees : nil
     }
     
     fileprivate func toJSON() -> [Degrees] {
@@ -250,17 +256,15 @@ public struct GeoJSON: Hashable {
     case polygon(Polygon)
     
     fileprivate init(coordinates: [Any]) throws {
-      if let coordinates = coordinates as? [[[Degrees]]] {
+      if let coordinates = coordinates as? [[[Any]]] {
         let positions = try coordinates.map { try $0.map { try Position(coordinates: $0) }}
         self = .polygon(Polygon(positions))
-      } else if let coordinates = coordinates as? [[Degrees]] {
+      } else if let coordinates = coordinates as? [[Any]] {
         let positions = try coordinates.map { try Position(coordinates: $0) }
         self = .lineString(LineString(positions: positions))
-      } else if let coordinates = coordinates as? [Degrees] {
+      } else {
         let position = try Position(coordinates: coordinates)
         self = .point(position)
-      } else {
-        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \([[[Degrees]]].self), \([[Degrees]].self), or \([Degrees].self), but got \(Swift.type(of: coordinates)).")
       }
     }
     
