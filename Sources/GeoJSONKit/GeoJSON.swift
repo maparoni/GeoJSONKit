@@ -159,8 +159,8 @@ public struct GeoJSON: Hashable {
         throw SerializationError.wrongNumberOfCoordinates("At least 2 per position")
       }
       guard
-        let lat = coordinates[0] as? Degrees,
-        let lng = coordinates[1] as? Degrees
+        let lat = coordinates[1] as? Degrees,
+        let lng = coordinates[0] as? Degrees
       else {
         throw SerializationError.wrongTypeOfSimpleGeometry("Expected \(Degrees.self) for coordinates but got \(Swift.type(of: coordinates[0])) and \(Swift.type(of: coordinates[1]))")
       }
@@ -558,9 +558,9 @@ fileprivate enum Adjuster {
   
   static func hashable(_ value: Any) -> AnyHashable? {
     if let dict = value as? [String: Any] {
-      return dict.mapValues(hashable(_:))
+      return dict.compactMapValues(hashable(_:))
     } else if let array = value as? [Any] {
-      return array.map(hashable(_:))
+      return array.compactMap(hashable(_:))
     } else if let hashable = value as? AnyHashable {
       return hashable
     } else {
