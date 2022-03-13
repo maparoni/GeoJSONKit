@@ -158,14 +158,16 @@ public struct GeoJSON: Hashable {
       guard coordinates.count >= 2 else {
         throw SerializationError.wrongNumberOfCoordinates("At least 2 per position")
       }
-      guard
-        let lat = coordinates[1] as? Degrees,
-        let lng = coordinates[0] as? Degrees
-      else {
-        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \(Degrees.self) for coordinates but got \(Swift.type(of: coordinates[0])) ('\(coordinates[0])') and \(Swift.type(of: coordinates[1])) ('\(coordinates[1])')")
+      
+      if let lat = coordinates[1] as? Degrees, let lng = coordinates[0] as? Degrees {
+        latitude = lat
+        longitude = lng
+      } else if let lat = coordinates[1] as? Decimal, let lng = coordinates[0] as? Decimal {
+        latitude = GeoJSON.Degrees((lat as NSDecimalNumber).doubleValue)
+        longitude = GeoJSON.Degrees((lng as NSDecimalNumber).doubleValue)
+      } else {
+        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \(Degrees.self) for coordinates but got \(Swift.type(of: coordinates[0])) (\(coordinates[0])) and \(Swift.type(of: coordinates[1])) (\(coordinates[1]))")
       }
-      latitude = lat
-      longitude = lng
       altitude = coordinates.count >= 3 ? coordinates[2] as? Degrees : nil
     }
     
