@@ -543,11 +543,11 @@ fileprivate enum Adjuster {
       return dict.mapValues(prune(_:))
     } else if value is Int || value is [Int] || value is [[Int]] || value is Bool || value is [Bool] || value is [[Bool]] {
       return value
-    } else if let doubles = value as? [Double] {
+    } else if let doubles = value as? [GeoJSON.Degrees] {
       return doubles.prune
-    } else if let doubless = value as? [[Double]] {
+    } else if let doubless = value as? [[GeoJSON.Degrees]] {
       return doubless.map(\.prune)
-    } else if let double = value as? Double {
+    } else if let double = value as? GeoJSON.Degrees {
       return Decimal(double)
     } else if let array = value as? [Any] {
       return array.map(prune(_:))
