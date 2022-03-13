@@ -24,7 +24,7 @@ public struct GeoJSON: Hashable {
     case unexpectedRoot
     case missingOrInvalidRequiredField(String)
     case wrongNumberOfCoordinates(String)
-    case wrongTypeOfSimpleGeometry
+    case wrongTypeOfSimpleGeometry(String)
   }
   
   /// A GeoJSON object may represent a region of space (a Geometry), a
@@ -84,8 +84,10 @@ public struct GeoJSON: Hashable {
         }
         self = .collection(geometries)
         
-      default:
-        throw SerializationError.wrongTypeOfSimpleGeometry
+      case .feature:
+        throw SerializationError.wrongTypeOfSimpleGeometry("Can't turn Feature into GeometryObject")
+      case .featureCollection:
+        throw SerializationError.wrongTypeOfSimpleGeometry("Can't turn FeatureCollection into GeometryObject")
       }
     }
     
@@ -152,13 +154,21 @@ public struct GeoJSON: Hashable {
       self.altitude = altitude
     }
     
-    fileprivate init(coordinates: [Degrees]) throws {
+    fileprivate init(coordinates: [Any]) throws {
       guard coordinates.count >= 2 else {
         throw SerializationError.wrongNumberOfCoordinates("At least 2 per position")
       }
-      latitude = coordinates[1]
-      longitude = coordinates[0]
-      altitude = coordinates.count >= 3 ? coordinates[2] : nil
+      
+      if let lat = coordinates[1] as? Degrees, let lng = coordinates[0] as? Degrees {
+        latitude = lat
+        longitude = lng
+      } else if let lat = coordinates[1] as? Decimal, let lng = coordinates[0] as? Decimal {
+        latitude = GeoJSON.Degrees((lat as NSDecimalNumber).doubleValue)
+        longitude = GeoJSON.Degrees((lng as NSDecimalNumber).doubleValue)
+      } else {
+        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \(Degrees.self) for coordinates but got \(Swift.type(of: coordinates[0])) (\(coordinates[0])) and \(Swift.type(of: coordinates[1])) (\(coordinates[1]))")
+      }
+      altitude = coordinates.count >= 3 ? coordinates[2] as? Degrees : nil
     }
     
     fileprivate func toJSON() -> [Degrees] {
@@ -248,17 +258,15 @@ public struct GeoJSON: Hashable {
     case polygon(Polygon)
     
     fileprivate init(coordinates: [Any]) throws {
-      if let coordinates = coordinates as? [[[Degrees]]] {
+      if let coordinates = coordinates as? [[[Any]]] {
         let positions = try coordinates.map { try $0.map { try Position(coordinates: $0) }}
         self = .polygon(Polygon(positions))
-      } else if let coordinates = coordinates as? [[Degrees]] {
+      } else if let coordinates = coordinates as? [[Any]] {
         let positions = try coordinates.map { try Position(coordinates: $0) }
         self = .lineString(LineString(positions: positions))
-      } else if let coordinates = coordinates as? [Degrees] {
+      } else {
         let position = try Position(coordinates: coordinates)
         self = .point(position)
-      } else {
-        throw SerializationError.wrongTypeOfSimpleGeometry
       }
     }
     
@@ -537,11 +545,11 @@ fileprivate enum Adjuster {
       return dict.mapValues(prune(_:))
     } else if value is Int || value is [Int] || value is [[Int]] || value is Bool || value is [Bool] || value is [[Bool]] {
       return value
-    } else if let doubles = value as? [Double] {
+    } else if let doubles = value as? [GeoJSON.Degrees] {
       return doubles.prune
-    } else if let doubless = value as? [[Double]] {
+    } else if let doubless = value as? [[GeoJSON.Degrees]] {
       return doubless.map(\.prune)
-    } else if let double = value as? Double {
+    } else if let double = value as? GeoJSON.Degrees {
       return Decimal(double)
     } else if let array = value as? [Any] {
       return array.map(prune(_:))
@@ -552,9 +560,9 @@ fileprivate enum Adjuster {
   
   static func hashable(_ value: Any) -> AnyHashable? {
     if let dict = value as? [String: Any] {
-      return dict.mapValues(hashable(_:))
+      return dict.compactMapValues(hashable(_:))
     } else if let array = value as? [Any] {
-      return array.map(hashable(_:))
+      return array.compactMap(hashable(_:))
     } else if let hashable = value as? AnyHashable {
       return hashable
     } else {
