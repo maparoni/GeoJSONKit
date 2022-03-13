@@ -162,7 +162,7 @@ public struct GeoJSON: Hashable {
         let lat = coordinates[1] as? Degrees,
         let lng = coordinates[0] as? Degrees
       else {
-        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \(Degrees.self) for coordinates but got \(Swift.type(of: coordinates[0])) and \(Swift.type(of: coordinates[1]))")
+        throw SerializationError.wrongTypeOfSimpleGeometry("Expected \(Degrees.self) for coordinates but got \(Swift.type(of: coordinates[0])) ('\(coordinates[0])') and \(Swift.type(of: coordinates[1])) ('\(coordinates[1])')")
       }
       latitude = lat
       longitude = lng
