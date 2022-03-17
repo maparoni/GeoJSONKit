@@ -105,3 +105,34 @@ extension GeoJSON.GeometryObject: Codable {
     }
   }
 }
+
+extension GeoJSON.Feature {
+  
+  /// Create a feature with the provided `Encodable` as the properties
+  /// - Parameters:
+  ///   - geometry: Geometry
+  ///   - properties: Known structure to use for the properties
+  ///   - id: GeoJSON-compatible ID, i.e., an Integer or a String
+  ///   - configure: Optional handler to configure how to encode the `Encodable`
+  public init<P: Encodable>(geometry: GeoJSON.GeometryObject, properties: P, id: AnyHashable? = nil, configure: (inout JSONEncoder) -> Void  = { _ in }) throws {
+    var encoder = JSONEncoder()
+    configure(&encoder)
+    let data = try encoder.encode(properties)
+    let asDict = try JSONSerialization.jsonObject(with: data) as? [String: AnyHashable]
+    self.init(geometry: geometry, properties: asDict, id: id)
+  }
+  
+  
+  /// Parses the properties as the provided `Decodable`
+  /// - Parameters:
+  ///   - type: Known structure to decode the feature's properties again
+  ///   - configure: Optional handler to configure how to decode the `Decodable`
+  /// - Returns: Properties decoded as the provided `Decodable`
+  public func properties<P: Decodable>(as type: P.Type, configure: (inout JSONDecoder) -> Void  = { _ in }) throws -> P {
+    let asData = try JSONSerialization.data(withJSONObject: properties ?? [:])
+    var decoder = JSONDecoder()
+    configure(&decoder)
+    return try decoder.decode(P.self, from: asData)
+  }
+  
+}
