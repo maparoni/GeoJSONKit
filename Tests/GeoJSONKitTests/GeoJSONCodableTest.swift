@@ -194,5 +194,27 @@ final class GeoJSONCodableTest: XCTestCase {
     let data = try XCTestCase.loadData(filename: "featurecollection")
     XCTAssertThrowsError(try JSONDecoder().decode(GeoJSON.GeometryObject.self, from: data))
   }
+  
+  func testNonTypedInitializerDoesNotThrow() throws {
+    let point = GeoJSON.GeometryObject.single(.point(.init(latitude: -33.9451, longitude: 151.2581)))
+    let feature = GeoJSON.Feature(geometry: point, properties: ["key": "value"])
+    XCTAssertNotNil(feature)
+  }
+
+  func testTypedInitializerCanThrow() throws {
+    let point = GeoJSON.GeometryObject.single(.point(.init(latitude: -33.9451, longitude: 151.2581)))
+    let model = Model(name: "Test", number: 3517, date: Date())
+    let feature = try GeoJSON.Feature(geometry: point, model: model)
+    XCTAssertNotNil(feature)
     
+    let restored = try feature.model(as: Model.self)
+    XCTAssertEqual(model, restored)
+  }
+
+}
+
+fileprivate struct Model: Codable, Equatable {
+  let name: String
+  let number: Int
+  let date: Date
 }

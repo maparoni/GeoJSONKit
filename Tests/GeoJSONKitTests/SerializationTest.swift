@@ -32,7 +32,5 @@ class SerializationTest: XCTestCase {
       let fromDict = try GeoJSON.GeometryObject(dict: asDict)
       XCTAssertEqual(geometry, fromDict)
     }
-    
   }
-  
 }
