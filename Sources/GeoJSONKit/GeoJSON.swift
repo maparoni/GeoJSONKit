@@ -296,7 +296,10 @@ public struct GeoJSON: Hashable {
   /// Features in GeoJSON contain a Geometry object and additional properties.
   public struct Feature: Hashable {
     public var geometry: GeometryObject
+    
+    /// Optional properties, as a dictionary.
     public var properties: [String: AnyHashable]?
+    
     public var id: AnyHashable? // number or string
     
     public init(geometry: GeometryObject, properties: [String: AnyHashable]? = nil, id: AnyHashable? = nil) {
@@ -315,6 +318,9 @@ public struct GeoJSON: Hashable {
       id = dict["id"] as? AnyHashable
     }
     
+    /// - Warning: If there are no properties, the `properties` field will be omitted, to avoid dealing
+    ///     with `nil` values in a dictionary. This is strictly speaking not compliant with the [GeoJSON spec](https://datatracker.ietf.org/doc/html/rfc7946#section-3.2),
+    ///     which says this value should be present with a JSON null value.
     public func toJSON(prune: Bool = true) -> [String: AnyHashable] {
       var json: [String: Any] = [
         "type": "Feature",
