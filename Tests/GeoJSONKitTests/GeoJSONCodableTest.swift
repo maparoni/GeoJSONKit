@@ -206,6 +206,7 @@ final class GeoJSONCodableTest: XCTestCase {
     let model = Model(name: "Test", number: 3517, date: Date())
     let feature = try GeoJSON.Feature(geometry: point, model: model)
     XCTAssertNotNil(feature)
+    XCTAssertNotNil(feature.properties)
     
     let restored = try feature.model(as: Model.self)
     XCTAssertEqual(model, restored)
