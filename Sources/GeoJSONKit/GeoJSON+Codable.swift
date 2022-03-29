@@ -118,7 +118,11 @@ extension GeoJSON.Feature {
     var encoder = JSONEncoder()
     configure(&encoder)
     let data = try encoder.encode(model)
-    let asDict = try JSONSerialization.jsonObject(with: data) as? [String: AnyHashable]
+    let decoded = try JSONSerialization.jsonObject(with: data)
+    
+    // This is needed for Linux as JSONSerialization behaves differently there
+    let asDict = (decoded as? [String: Any])?.compactMapValues(Adjuster.hashable(_:))
+    
     self.init(geometry: geometry, properties: asDict, id: id)
   }
   

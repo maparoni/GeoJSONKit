@@ -539,7 +539,7 @@ fileprivate extension Array where Element == GeoJSON.Degrees {
   }
 }
 
-fileprivate enum Adjuster {
+enum Adjuster {
   static func prune(_ value: Any) -> Any {
     if let dict = value as? [String: Any] {
       return dict.mapValues(prune(_:))
