@@ -14,7 +14,7 @@ import XCTest
 @available(iOS 10.0, *)
 class ForeignMemberTest: XCTestCase {
   
-  func testForeignMemberCoding(in geoJSON: GeoJSON) throws {
+  func runForeignMemberCodingTest(in geoJSON: GeoJSON, file: StaticString = #filePath, line: UInt = #line) throws {
     let today = ISO8601DateFormatter().string(from: Date())
     
     var json = geoJSON.toJSON()
@@ -43,17 +43,17 @@ class ForeignMemberTest: XCTestCase {
     
     let roundTrippedJSON = modifiedObject.toJSON()
     
-    let when = try XCTUnwrap(roundTrippedJSON["when"] as? [String: Any?])
-    XCTAssertEqual(when as NSDictionary, json["when"] as? NSDictionary)
+    let when = try XCTUnwrap(roundTrippedJSON["when"] as? [String: Any?], file: file, line: line)
+    XCTAssertEqual(when as NSDictionary, json["when"] as? NSDictionary, file: file, line: line)
   }
   
   func testForeignMemberCoding() throws {
     let nullIsland = GeoJSON.Position(latitude: 0, longitude: 0)
-    try testForeignMemberCoding(in: .init(geometry: .single(.point(nullIsland))))
-    try testForeignMemberCoding(in: .init(geometry: .single(.lineString(.init(positions: [nullIsland, nullIsland])))))
-    try testForeignMemberCoding(in: .init(geometry: .single(.polygon(.init([[nullIsland, nullIsland]])))))
-    try testForeignMemberCoding(in: .init(feature: .init(geometry: .single(.point(nullIsland)))))
-    try testForeignMemberCoding(in: .init(features: []))
+    try runForeignMemberCodingTest(in: .init(geometry: .single(.point(nullIsland))))
+    try runForeignMemberCodingTest(in: .init(geometry: .single(.lineString(.init(positions: [nullIsland, nullIsland])))))
+    try runForeignMemberCodingTest(in: .init(geometry: .single(.polygon(.init([[nullIsland, nullIsland]])))))
+    try runForeignMemberCodingTest(in: .init(feature: .init(geometry: .single(.point(nullIsland)))))
+    try runForeignMemberCodingTest(in: .init(features: []))
   }
   
 }
