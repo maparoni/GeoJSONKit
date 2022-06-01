@@ -8,9 +8,10 @@
 
 import Foundation
 
+/// Representation of a [GeoJSON](https://geojson.org) document
 public struct GeoJSON: Hashable {
 
-  /// A latitude or longitude in degrees. Typically uses `WGS84`.
+  /// A latitude or longitude in degrees. Should use `WGS84`.
   public typealias Degrees = Double
 
   /// An azimuth measured in degrees clockwise from true north.
@@ -130,7 +131,8 @@ public struct GeoJSON: Hashable {
     }
       
   }
-
+  
+  /// The type of a GeoJSON, representing the value of the top-level "type" field in the JSON
   public enum GeoJSONType: String, Codable, CaseIterable {
     case feature = "Feature"
     case featureCollection = "FeatureCollection"
@@ -143,6 +145,7 @@ public struct GeoJSON: Hashable {
     case geometryCollection = "GeometryCollection"
   }
   
+  /// A GeoJSON Position, with latitude, longitude and optional altitude
   public struct Position: Hashable {
     public var latitude: Degrees
     public var longitude: Degrees
@@ -408,12 +411,21 @@ public struct GeoJSON: Hashable {
     }
   }
   
+  /// Top-level type of the GeoJSON.
+  ///
+  /// Spec: *A GeoJSON object has a member with the name "type".  The value of
+  /// the member MUST be one of the GeoJSON types.*
   public var type: GeoJSONType
+
+  /// Strongly typed primary representation of the GeoJSON, i.e., if it's a feature, feature collection
+  /// or a geometry.
   public var object: GeoJSONObject
-  
-  /// A GeoJSON object MAY have a member named "bbox" to include
+
+  /// Bounding box of the GeoJSON, if specifically provided.
+  ///
+  /// Spec: *A GeoJSON object MAY have a member named "bbox" to include
   /// information on the coordinate range for its Geometries, Features, or
-  /// FeatureCollections.
+  /// FeatureCollections.*
   public var boundingBox: BoundingBox?
   
   /// Additional fields that we didn't parse
@@ -427,6 +439,7 @@ public struct GeoJSON: Hashable {
     self.boundingBox = boundingBox
   }
   
+  /// Initialises a new Feature.
   public init(feature: Feature, additionalFields: [String: AnyHashable] = [:], boundingBox: BoundingBox? = nil) {
     type = .feature
     object = .feature(feature)
@@ -434,6 +447,7 @@ public struct GeoJSON: Hashable {
     self.boundingBox = boundingBox
   }
 
+  /// Initialises a new Geometry.
   public init(geometry: GeometryObject, additionalFields: [String: AnyHashable] = [:], boundingBox: BoundingBox? = nil) {
     type = geometry.type
     object = .geometry(geometry)
