@@ -1,5 +1,7 @@
 # GeoJSONKit
 
+[![Swift](https://github.com/maparoni/GeoJSONKit/actions/workflows/swift.yml/badge.svg)](https://github.com/maparoni/GeoJSONKit/actions/workflows/swift.yml)
+
 Yet another GeoJSON library in Swift. This is a tiny framework with a focus on simplicity, use of Swift's enums and parsing performance.
 
 Note: There's no full support for `Codable`. It's provided for the [`GeoJSON.GeometryObject` part](https://github.com/maparoni/GeoJSONKit/blob/main/Sources/GeoJSONKit/GeoJSON%2BCodable.swift). That's on purpose and there are other libraries listed below that fully support `Codable`, if that's what you're after.
