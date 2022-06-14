@@ -203,8 +203,29 @@ public struct GeoJSON: Hashable {
   }
   
   public struct Polygon: Hashable {
-    public typealias LinearRing = LineString
-    
+    public struct LinearRing: Hashable {
+      public var positions: [Position]
+      
+      // We precompute this as it's static, but slow to re-compute
+      private let precomputedHash: Int
+      
+      public init(positions: [Position]) {
+        var adjusted = positions
+        if let first = adjusted.first, first != adjusted.last {
+          adjusted.append(first)
+        }
+        self.positions = adjusted
+        
+        var hasher = Hasher()
+        hasher.combine(adjusted)
+        precomputedHash = hasher.finalize()
+      }
+      
+      public func hash(into hasher: inout Hasher) {
+        hasher.combine(precomputedHash)
+      }
+    }
+        
     public var exterior: LinearRing
     public var interiors: [LinearRing]
     
@@ -226,7 +247,6 @@ public struct GeoJSON: Hashable {
     public init(exterior: LinearRing, interiors: [LinearRing] = []) {
       self.exterior = exterior
       self.interiors = interiors
-      
       
       var hasher = Hasher()
       hasher.combine(exterior)
