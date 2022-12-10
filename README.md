@@ -11,6 +11,7 @@ Note: There's no full support for `Codable`. It's provided for the [`GeoJSON.Geo
 This package has various extensions:
 
 - [GeoJSONKit+Turf](https://github.com/maparoni/geojsonkit-turf) for powerful spatial analysis, all in Swift
+- [GeoProjector](https://github.com/maparoni/GeoProjector) for map projections, all in Swift
 - [GeoJSONKit+GEOS](https://gitlab.com/maparoni/geojsonkit-geos) for interfacing with the [Geometry Engine - Open Source](https://trac.osgeo.org/geos)
 - [GeoJSONKit+Vapor](https://gitlab.com/maparoni/geojsonkit/snippets/1972906) for server-side usage
 
