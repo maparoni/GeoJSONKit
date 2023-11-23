@@ -233,7 +233,7 @@ public struct GeoJSON: Hashable {
     private let precomputedHash: Int
     
     public init(_ rings: [[Position]]) {
-      self.exterior = LinearRing(positions: rings.first!)
+      self.exterior = LinearRing(positions: rings.first ?? [])
       self.interiors = rings
         .dropFirst()
         .map(LinearRing.init)
