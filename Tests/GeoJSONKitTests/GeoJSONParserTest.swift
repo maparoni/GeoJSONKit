@@ -171,6 +171,25 @@ final class GeoJSONParserTest: XCTestCase {
     XCTAssertNil(positions2[1].altitude)
   }
   
+  func testEmptyPolygon() throws {
+    let parsed = try GeoJSON(geoJSONString: """
+      {
+        "type": "Feature",
+        "properties": {
+          "stroke": "#F00",
+          "fill": "#F00",
+          "stroke-width": 6,
+          "fill-opacity": 0.1
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": []
+        }
+      }
+      """)
+    XCTAssertNotNil(parsed)
+  }
+  
   func testMultiPolygon() throws {
     let data = try XCTestCase.loadData(filename: "multipolygon")
     let parsed = try GeoJSON(data: data)
