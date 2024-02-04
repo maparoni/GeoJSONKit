@@ -92,7 +92,7 @@ public struct GeoJSON: Hashable {
       }
     }
     
-    var type: GeoJSONType {
+    public var type: GeoJSONType {
       switch self {
       case .single(let geometry):
         switch geometry {
