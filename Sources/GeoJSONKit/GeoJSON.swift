@@ -92,7 +92,7 @@ public struct GeoJSON: Hashable, @unchecked Sendable {
       }
     }
     
-    var type: GeoJSONType {
+    public var type: GeoJSONType {
       switch self {
       case .single(let geometry):
         switch geometry {
@@ -233,7 +233,7 @@ public struct GeoJSON: Hashable, @unchecked Sendable {
     private let precomputedHash: Int
     
     public init(_ rings: [[Position]]) {
-      self.exterior = LinearRing(positions: rings.first!)
+      self.exterior = LinearRing(positions: rings.first ?? [])
       self.interiors = rings
         .dropFirst()
         .map(LinearRing.init)
