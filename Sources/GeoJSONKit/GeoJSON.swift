@@ -9,8 +9,8 @@
 import Foundation
 
 /// Representation of a [GeoJSON](https://geojson.org) document
-public struct GeoJSON: Hashable {
-
+public struct GeoJSON: Hashable, @unchecked Sendable {
+  
   /// A latitude or longitude in degrees. Should use `WGS84`.
   public typealias Degrees = Double
 
@@ -31,7 +31,7 @@ public struct GeoJSON: Hashable {
   /// A GeoJSON object may represent a region of space (a Geometry), a
   /// spatially bounded entity (a Feature), or a list of Features (a
   /// FeatureCollection).
-  public enum GeoJSONObject: Hashable {
+  public enum GeoJSONObject: Hashable, Sendable {
     /// A region of space
     case geometry(GeometryObject)
 
@@ -45,7 +45,7 @@ public struct GeoJSON: Hashable {
   /// GeoJSON supports the following geometry types:
   /// Point, LineString, Polygon, MultiPoint, MultiLineString,
   /// MultiPolygon, and GeometryCollection.
-  public enum GeometryObject: Hashable {
+  public enum GeometryObject: Hashable, Sendable {
     /// A single region of space
     case single(Geometry)
     
@@ -133,7 +133,7 @@ public struct GeoJSON: Hashable {
   }
   
   /// The type of a GeoJSON, representing the value of the top-level "type" field in the JSON
-  public enum GeoJSONType: String, Codable, CaseIterable {
+  public enum GeoJSONType: String, Codable, CaseIterable, Sendable {
     case feature = "Feature"
     case featureCollection = "FeatureCollection"
     case point = "Point"
@@ -146,7 +146,7 @@ public struct GeoJSON: Hashable {
   }
   
   /// A GeoJSON Position, with latitude, longitude and optional altitude
-  public struct Position: Hashable {
+  public struct Position: Hashable, Sendable {
     public var latitude: Degrees
     public var longitude: Degrees
     public var altitude: Distance?
@@ -183,7 +183,7 @@ public struct GeoJSON: Hashable {
     }
   }
   
-  public struct LineString: Hashable {
+  public struct LineString: Hashable, Sendable {
     public var positions: [Position]
     
     // We precompute this as it's static, but slow to re-compute
@@ -202,8 +202,8 @@ public struct GeoJSON: Hashable {
     }
   }
   
-  public struct Polygon: Hashable {
-    public struct LinearRing: Hashable {
+  public struct Polygon: Hashable, Sendable {
+    public struct LinearRing: Hashable, Sendable {
       public var positions: [Position]
       
       // We precompute this as it's static, but slow to re-compute
@@ -273,7 +273,7 @@ public struct GeoJSON: Hashable {
     }
   }
   
-  public enum Geometry: Hashable {
+  public enum Geometry: Hashable, Sendable {
     // identified by coordinates + geometries
 
     case point(Position)
@@ -317,7 +317,7 @@ public struct GeoJSON: Hashable {
   }
   
   /// Features in GeoJSON contain a Geometry object and additional properties.
-  public struct Feature: Hashable {
+  public struct Feature: Hashable, @unchecked Sendable {
     public var geometry: GeometryObject
     
     /// Optional properties, as a dictionary.
@@ -355,7 +355,7 @@ public struct GeoJSON: Hashable {
     }
   }
  
-  public struct BoundingBox: Hashable {
+  public struct BoundingBox: Hashable, Sendable {
     public let southWesterlyLatitude:  Degrees
     public let southWesterlyLongitude: Degrees
     public let northEasterlyLatitude:  Degrees

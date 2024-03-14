@@ -10,7 +10,7 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Build
       run: swift build
     - name: Test
@@ -18,10 +18,13 @@ jobs:
 
   linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift: ["5.10", "5.9", "5.8", "5.7"]
     container:
-      image: swift:5.4
+      image: swift:${{ matrix.swift }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Build
       run: swift build
     - name: Test
